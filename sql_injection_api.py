@@ -37,9 +37,9 @@ def detect_sql_injection_api():
     predictions = model.predict(query)
 
     return jsonify({
-        "username_is_sql_injection": bool(predictions[0]),
-        "password_is_sql_injection": bool(predictions[1]),
-        "message": "SQL injection detection results"
+        "username_is_OS_Command_injection": bool(predictions[0]),
+        "password_is_OS_Command_injection": bool(predictions[1]),
+        #"message": "SQL injection detection results"
     })
 
 if __name__ == '__main__':
