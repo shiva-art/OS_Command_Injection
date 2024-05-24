@@ -12,20 +12,27 @@ CORS(app)  # Allow Cross-Origin Resource Sharing
 tfidf_vectorizer = joblib.load("tfidf_vectorizer_OS.pkl")
 model = joblib.load("trained_model_OS.pkl")
 
-@app.route('/', methods=['POST'])
-def detect_OS_injection_api():
-    username = request.json.get('username')
-    password = request.json.get('password')
+@app.route('/check-note', methods=['POST'])
+def check_note():
+    note = request.json.get('note')
 
-    # If no SQL injection patterns are found, use the trained model
-    query = tfidf_vectorizer.transform([username, password ])
-    predictions = model.predict(query)
+    # Vectorize input for XSS detection
+    input_vectorized = tfidf_vectorizer.transform([note]).toarray()
 
-    return jsonify({
-        "username_is_OS_Command_injection": bool(predictions[0]),
-        "password_is_OS_Command_injection": bool(predictions[1]),
-        #"message": "SQL injection detection results"
-    })
+    # Predict XSS for the note
+    prediction_OS = model.predict(input_vectorized)
+
+    response = {
+        "is_OS_command_injection": bool(prediction_OS),
+    }
+
+    if response["is_OS_command_injection"]:
+        response["message"] = "OS Command injection detected"
+    else:
+        response["message"] = "OS Command injection not detected"
+
+
+    return jsonify(response)
 
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=5009)
